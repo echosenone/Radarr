@@ -31,8 +31,8 @@ namespace NzbDrone.Core.Notifications.Notifiarr
             }
             catch (NotifiarrException ex)
             {
-                _logger.Error(ex, "Unable to send notification");
-                throw new NotifiarrException("Unable to send notification");
+                _logger.Error(ex, ex.Message);
+                throw new NotifiarrException(ex.Message);
             }
         }
 
@@ -67,6 +67,11 @@ namespace NzbDrone.Core.Notifications.Notifiarr
 
                 _logger.Error(ex, "Unknown HTTP Error - Unable to send test message: " + ex.Message);
                 return new ValidationFailure("", "Unknown HTTP Error - Unable to send test message");
+            }
+            catch (NotifiarrException ex)
+            {
+                // Already logged; skip logging
+                return new ValidationFailure("", "Unable to send test notification." + ex.Message);
             }
             catch (Exception ex)
             {
