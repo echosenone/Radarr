@@ -78,6 +78,10 @@ namespace NzbDrone.Core.MediaFiles.MovieImport.Specifications
             var customFormats = _customFormatCalculationService.ParseCustomFormat(file);
             var movieFileCustomFormatScore = profile.CalculateCustomFormatScore(customFormats);
 
+            _logger.Trace("Existing File Custom Formats: [{0}]", string.Join(',', customFormats.Select(f => f.Name)));
+
+            _logger.Trace("New File Custom Format Score {0}, Existing File Custom Format Score {1}, for profile {2}", preferredWordScore, movieFileCustomFormatScore, profile.Name);
+
             if (qualityCompare == 0 && preferredWordScore < movieFileCustomFormatScore)
             {
                 _logger.Debug("This file isn't a custom format upgrade for movie. Skipping {0}", localMovie.Path);
@@ -110,6 +114,8 @@ namespace NzbDrone.Core.MediaFiles.MovieImport.Specifications
             }
 
             var formats = fileFormats.Union(folderFormats.Union(clientFormats)).ToList();
+
+            _logger.Trace("Incoming File Custom Formats: [{0}]", string.Join(',', formats.Select(f => f.Name)));
 
             return profile.CalculateCustomFormatScore(formats);
         }
