@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Linq;
 using NLog;
-using NzbDrone.Common.Extensions;
 using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download;
@@ -47,7 +45,6 @@ namespace NzbDrone.Core.MediaFiles.MovieImport.Specifications
         private Decision Calculate(Profile profile, LocalMovie localMovie, MovieFile file)
         {
             var qualityComparer = new QualityModelComparer(profile);
-            var preferredWordScore = GetCustomFormatScore(profile, localMovie);
 
             // Check to see if the existing file is valid for this profile. if not, don't count against this release
             var qualityIndex = profile.GetIndex(file.Quality.Quality);
@@ -74,53 +71,7 @@ namespace NzbDrone.Core.MediaFiles.MovieImport.Specifications
                 return Decision.Reject("Not a quality upgrade for existing movie file(s)", profile.Id);
             }
 
-            file.Movie = localMovie.Movie;
-            var customFormats = _customFormatCalculationService.ParseCustomFormat(file);
-            var movieFileCustomFormatScore = profile.CalculateCustomFormatScore(customFormats);
-
-            if (customFormats != null && customFormats.Count > 0)
-            {
-                _logger.Trace("Existing File Custom Formats: [{0}]", string.Join(',', customFormats.Select(f => f.Name)));
-            }
-
-            _logger.Trace("New File Custom Format Score {0}, Existing File Custom Format Score {1}, for profile {2}", preferredWordScore, movieFileCustomFormatScore, profile.Name);
-
-            if (qualityCompare == 0 && preferredWordScore < movieFileCustomFormatScore)
-            {
-                _logger.Debug("This file isn't a custom format upgrade for movie. Skipping {0}", localMovie.Path);
-                return Decision.Reject("Not a custom format upgrade for existing movie file(s)", profile.Id);
-            }
-
             return Decision.Accept();
-        }
-
-        private int GetCustomFormatScore(Profile profile, LocalMovie localMovie)
-        {
-            var movie = localMovie.Movie;
-            var fileFormats = new List<CustomFormat>();
-            var folderFormats = new List<CustomFormat>();
-            var clientFormats = new List<CustomFormat>();
-
-            if (localMovie.FileMovieInfo != null)
-            {
-                fileFormats = _customFormatCalculationService.ParseCustomFormat(localMovie.FileMovieInfo, movie);
-            }
-
-            if (localMovie.FolderMovieInfo != null)
-            {
-                folderFormats = _customFormatCalculationService.ParseCustomFormat(localMovie.FolderMovieInfo, movie);
-            }
-
-            if (localMovie.DownloadClientMovieInfo != null)
-            {
-                clientFormats = _customFormatCalculationService.ParseCustomFormat(localMovie.DownloadClientMovieInfo, movie);
-            }
-
-            var formats = fileFormats.Union(folderFormats.Union(clientFormats)).ToList();
-
-            _logger.Trace("Incoming File Custom Formats: [{0}]", string.Join(',', formats.Select(f => f.Name)));
-
-            return profile.CalculateCustomFormatScore(formats);
         }
     }
 }
