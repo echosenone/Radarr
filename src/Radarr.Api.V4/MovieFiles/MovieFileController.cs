@@ -153,9 +153,11 @@ namespace Radarr.Api.V4.MovieFiles
 
             _mediaFileService.Update(movieFiles);
 
-            var movie = _movieService.GetMovie(movieFiles.First().MovieId);
+            var movies = _movieService.GetMovies(movieFiles.Select(x => x.MovieId).Distinct());
 
-            return Accepted(movieFiles.ConvertAll(f => f.ToResource(movie, _qualityUpgradableSpecification, _formatCalculator)));
+            movieFiles.ForEach(x => x.Movie = movies.SingleOrDefault(m => m.Id == x.MovieId));
+
+            return Accepted(movieFiles.ConvertAll(f => f.ToResource(f.Movie, _qualityUpgradableSpecification, _formatCalculator)));
         }
 
         [RestDeleteById]
