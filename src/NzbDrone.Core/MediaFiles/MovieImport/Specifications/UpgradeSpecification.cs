@@ -78,7 +78,10 @@ namespace NzbDrone.Core.MediaFiles.MovieImport.Specifications
             var customFormats = _customFormatCalculationService.ParseCustomFormat(file);
             var movieFileCustomFormatScore = profile.CalculateCustomFormatScore(customFormats);
 
-            _logger.Trace("Existing File Custom Formats: [{0}]", string.Join(',', customFormats.Select(f => f.Name)));
+            if (customFormats != null && customFormats.Count > 0)
+            {
+                _logger.Trace("Existing File Custom Formats: [{0}]", string.Join(',', customFormats.Select(f => f.Name)));
+            }
 
             _logger.Trace("New File Custom Format Score {0}, Existing File Custom Format Score {1}, for profile {2}", preferredWordScore, movieFileCustomFormatScore, profile.Name);
 
