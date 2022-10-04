@@ -228,7 +228,7 @@ namespace NzbDrone.Core.Test.DecisionEngineTests
                                                       .With(e => e.Movie = _movie)
                                                       .Build();
 
-            Subject.IsSatisfiedBy(remoteMovie, null).Should().OnlyContain(x => !x.Accepted);
+            Subject.IsSatisfiedBy(remoteMovie, null).Should().OnlyContain(x => x.Accepted);
         }
     }
 }
